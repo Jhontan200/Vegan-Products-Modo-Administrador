@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administración del Sistema Vegan Products</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="logo-text">VEGAN PRODUCTS</span>
+            <button class="toggle-btn" id="toggle-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <ul class="nav-list">
+                <li><a href="#" data-table="producto" class="nav-link"><i class="fas fa-box"></i>
+                        <span>Productos</span></a></li>
+                <li><a href="#" data-table="categoria" class="nav-link"><i class="fas fa-tags"></i>
+                        <span>Categorías</span></a></li>
+                <li><a href="#" data-table="usuario" class="nav-link"><i class="fas fa-users"></i>
+                        <span>Usuarios</span></a></li>
+                <li><a href="#" data-table="direccion" class="nav-link"><i class="fas fa-map-marker-alt"></i>
+                        <span>Direcciones</span></a></li>
+            </ul>
+
+            <ul class="nav-list">
+                <li><a href="#" data-table="orden" class="nav-link"><i class="fas fa-clipboard-list"></i>
+                        <span>Reporte de Órdenes</span></a></li>
+                <li><a href="#" data-table="orden_detalle" class="nav-link"><i class="fas fa-list-ol"></i>
+                        <span>Detalles de Pedidos</span></a></li>
+            </ul>
+
+            <ul class="nav-list">
+                <li><a href="#" data-table="departamento" class="nav-link"><i class="fas fa-globe-americas"></i>
+                        <span>Departamentos</span></a></li>
+                <li><a href="#" data-table="municipio" class="nav-link"><i class="fas fa-city"></i>
+                        <span>Municipios</span></a></li>
+                <li><a href="#" data-table="localidad" class="nav-link"><i class="fas fa-road"></i>
+                        <span>Localidades</span></a></li>
+                <li><a href="#" data-table="zona" class="nav-link"><i class="fas fa-crosshairs"></i>
+                        <span>Zonas</span></a></li>
+            </ul>
+
+            <div class="nav-separator"></div>
+
+            <div class="nav-title">SESIÓN</div>
+
+            <ul class="nav-list">
+                <li><a href="#" id="logout-link" class="nav-link logout"><i class="fas fa-sign-out-alt"></i>
+                        <span>Cerrar Sesión</span></a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="main-content" id="main-content">
+        <h1>Bienvenido al Panel de Administración</h1>
+        <p>Selecciona una tabla del menú lateral para comenzar a gestionar los datos.</p>
+        <div id="content-display" style="padding: 20px; border-radius: 5px; margin-top: 20px;">
+            Contenido de la tabla aparecerá aquí.
+        </div>
+    </div>
+
+    <div id="crud-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Título del Formulario</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div id="modal-body">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <script type="module" src="js/supabaseClient.js"></script>
+    <script type="module" src="js/AdminProductManager.js"></script>
+    <script type="module" src="js/AdminCategoryManager.js"></script>
+    <script type="module" src="js/AdminUserManager.js"></script>
+    <script type="module" src="js/AdminDireccionManager.js"></script>
+    <script type="module" src="js/AdminOrdenManager.js"></script>
+    <script type="module" src="js/AdminOrdenDetalleManager.js"></script>
+    <script type="module" src="js/AdminDepartamentoManager.js"></script>
+    <script type="module" src="js/AdminMunicipioManager.js"></script>
+    <script type="module" src="js/AdminLocalidadManager.js"></script>
+    <script type="module" src="js/AdminZonaManager.js"></script>
+    <script type="module" src="js/funciones_admin.js"></script>
+</body>
+
+</html>

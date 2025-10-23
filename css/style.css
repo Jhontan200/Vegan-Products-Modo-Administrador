@@ -1,0 +1,767 @@
+/* Importar la fuente Kanit */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;600;700;800&display=swap');
+
+/* Variables para facilitar el mantenimiento y aplicar la paleta de color */
+:root {
+    /* Colores basados en tu código */
+    --primary-color: #80CC28;
+    /* Verde Brillante (Acento/Activo) */
+    --secondary-color: #17542A;
+    /* Verde Oscuro (Fondo del Sidebar) */
+    --hover-color: rgb(79, 134, 15);
+    /* Verde Intermedio (Hover) */
+    --text-color-light: #ecf0f1;
+    /* Texto claro (Blanco/Gris muy claro) */
+
+    /* Estructura */
+    --sidebar-width-expanded: 250px;
+    --sidebar-width-collapsed: 80px;
+    --header-height: 60px;
+}
+
+/* Reset básico y estilos del cuerpo */
+body {
+    font-family: 'Kanit', sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Estilos del Sidebar */
+.sidebar {
+    width: var(--sidebar-width-expanded);
+    background-color: var(--secondary-color);
+    /* Fondo Verde Oscuro */
+    color: var(--text-color-light);
+    transition: width 0.3s ease;
+    /* Solo transicionar el ancho */
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    font-weight: 400;
+}
+
+/* Sidebar Colapsado */
+.sidebar.collapsed {
+    width: var(--sidebar-width-collapsed);
+}
+
+/* Estilos del Header del Sidebar */
+.sidebar-header {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    white-space: nowrap;
+}
+
+.logo-text {
+    font-size: 1.12em;
+    font-weight: 800;
+    color: var(--primary-color);
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+
+/* Ocultar texto del logo cuando está colapsado */
+.sidebar.collapsed .logo-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    padding: 0;
+}
+
+/* Botón de alternancia */
+.toggle-btn {
+    background: none;
+    border: none;
+    color: var(--text-color-light);
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.toggle-btn:hover {
+    background-color: var(--hover-color);
+}
+
+/* Estilos de Navegación */
+.sidebar-nav {
+    padding-top: 10px;
+}
+
+.nav-title {
+    font-size: 0.8em;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 10px 20px 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: opacity 0.3s ease, height 0.3s ease, padding 0.3s ease;
+    font-weight: 600;
+}
+
+/* Ocultar títulos de sección cuando está colapsado */
+.sidebar.collapsed .nav-title {
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-list li {
+    margin: 3px 0;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    color: var(--text-color-light);
+    text-decoration: none;
+    padding: 12px 20px;
+    transition: background-color 0.2s, color 0.2s;
+    border-left: 5px solid transparent;
+    font-weight: 500;
+}
+
+/* Estado de Hover (Verde Intermedio) */
+.nav-link:hover {
+    background-color: var(--hover-color);
+    color: #fff;
+    border-left-color: var(--primary-color);
+}
+
+/* Estado Activo (Verde Brillante y Fondo de Hover) */
+.nav-link.active {
+    background-color: var(--hover-color);
+    color: #fff;
+    border-left-color: var(--primary-color);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+
+/* Iconos */
+.nav-link i {
+    font-size: 1.2em;
+    width: 30px;
+    text-align: center;
+}
+
+/* Texto del enlace */
+.nav-link span {
+    margin-left: 15px;
+    opacity: 1;
+    transition: opacity 0.3s ease, margin-left 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Ocultar texto del enlace cuando está colapsado */
+.sidebar.collapsed .nav-link span {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    margin-left: 0;
+}
+
+/* Estilo específico para cerrar sesión (Rojo para advertir) */
+.nav-link.logout {
+    border-left-color: #e74c3c !important;
+}
+
+.nav-link.logout:hover,
+.nav-link.logout.active {
+    background-color: #c0392b;
+    border-left-color: #e74c3c !important;
+}
+
+
+.nav-separator {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.15);
+    margin: 15px 20px;
+}
+
+/* Contenido Principal */
+.main-content {
+    flex-grow: 1;
+    padding: 30px;
+    transition: padding 0.3s ease;
+}
+
+.main-content h1 {
+    color: var(--secondary-color);
+    font-weight: 700;
+    text-align: center;
+}
+
+#content-display h2 {
+    color: var(--hover-color);
+}
+
+/* Media Query opcional para dispositivos muy pequeños */
+@media (max-width: 768px) {
+    .sidebar {
+        /* Fuerza a colapsar en móviles para ahorrar espacio */
+        width: var(--sidebar-width-collapsed);
+    }
+
+    .sidebar:not(.collapsed) {
+        /* Permite que se abra temporalmente, cubriendo el contenido principal */
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        box-shadow: 4px 0 10px rgba(0, 0, 0, 0.4);
+    }
+
+    .main-content {
+        /* Asegura que el contenido use todo el espacio restante */
+        padding: 20px;
+    }
+
+    /* Ajuste para asegurar que el botón toggle sea visible en móviles */
+    .sidebar.collapsed .toggle-btn {
+        margin-left: -5px;
+    }
+}
+
+
+/* =========================================================
+    ESTILOS ADICIONALES PARA TABLAS DE ADMINISTRACIÓN
+    ========================================================= */
+
+/* Indicador de carga */
+.loading-indicator {
+    text-align: center;
+    padding: 30px;
+    font-size: 1.1em;
+    color: var(--secondary-color);
+}
+
+.loading-indicator i {
+    margin-right: 10px;
+}
+
+/* Mensajes de información/error */
+.error-message,
+.info-message {
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 15px;
+    font-weight: 500;
+}
+
+.error-message {
+    background-color: #fcebeb;
+    color: #cc0000;
+    border: 1px solid #f09595;
+}
+
+.info-message {
+    background-color: #e6f7ff;
+    color: #00688b;
+    border: 1px solid #99d8ff;
+}
+
+/* Contenedor de tabla para scroll horizontal en pantallas pequeñas */
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    background-color: white;
+    border: 1px solid #e0e0e0;
+}
+
+/* Estilos de la tabla */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    min-width: 800px;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    color: #444;
+}
+
+/* 🛑 CORRECCIÓN DE TABLA: Control de desbordamiento */
+.data-table td {
+    word-break: break-word;
+    /* Obliga a que las palabras largas se rompan */
+    vertical-align: top;
+    padding: 8px 10px;
+    max-width: 250px;
+    /* Máximo general, evitado que una columna ocupe todo */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+
+/* Regla específica para la columna Dirección de Envío (Columna 7 del Reporte de Órdenes) */
+.data-table th:nth-child(7),
+.data-table td:nth-child(7) {
+    min-width: 150px;
+    max-width: 250px;
+    white-space: normal;
+    /* Asegura que el texto se envuelva */
+}
+
+/* 🛑 FIN CORRECCIÓN DE TABLA */
+
+.data-table thead th {
+    background-color: #f7f7f7;
+    color: var(--secondary-color);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--primary-color);
+    text-align: -webkit-center;
+}
+
+.data-table tbody tr:hover {
+    background-color: #fcfcfc;
+}
+
+/* Estilos de botones de acción de fila */
+.btn-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    margin: 0 5px;
+    padding: 5px;
+    border-radius: 4px;
+    transition: color 0.2s, background-color 0.2s;
+}
+
+.btn-edit {
+    color: #2980b9;
+}
+
+.btn-edit:hover {
+    background-color: #eef7fc;
+}
+
+.btn-delete,
+.btn-delete-details {
+    color: #e74c3c;
+}
+
+.btn-delete:hover {
+    background-color: #ffeaea;
+}
+
+/* Indicadores Check/Cross para booleanos */
+.check-true {
+    color: var(--primary-color);
+}
+
+.check-false {
+    color: #e74c3c;
+}
+
+/* Botón Crear y Acciones */
+.table-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px 0;
+}
+
+.btn-create {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.btn-create:hover {
+    background-color: var(--hover-color);
+}
+
+.btn-create i {
+    margin-right: 5px;
+}
+
+.record-count {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Regla para que las imágenes se muestren correctamente */
+.data-table img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+
+/* =========================================================
+    ESTILOS PARA MODALES (Añadir y Editar)
+    ========================================================= */
+
+/* Overlay Oscuro */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+/* Contenido del Modal (La caja blanca) */
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+    /* 🛑 CORRECCIÓN DE MODAL: Limitar altura y permitir scroll */
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-overlay.active .modal-content {
+    transform: scale(1);
+}
+
+.modal-header {
+    display: flex;
+    /* 🛑 CAMBIO: Título Centrado */
+    justify-content: center;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+#modal-title {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--secondary-color);
+    font-weight: 700;
+    align-items: center;
+    /* 🛑 CAMBIO: Alineación del texto del título (aunque el flexbox ya lo centra horizontalmente) */
+    text-align: center;
+    flex-grow: 1;
+    /* Ocupa el espacio para centrarse mejor si el botón de cerrar está separado */
+}
+
+/* Botón de cerrar (X) */
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.8em;
+    cursor: pointer;
+    color: #888;
+    transition: color 0.2s;
+    /* Para que el título ocupe el espacio del botón y se centre, lo posicionamos absoluto */
+    position: absolute;
+    right: 30px;
+    top: 30px;
+}
+
+.close-btn:hover {
+    color: #e74c3c;
+}
+
+/* Estilos de los campos del formulario dentro del modal */
+#modal-body {
+    /* 🛑 CORRECCIÓN DE MODAL: Cuerpo con scroll */
+    overflow-y: auto;
+    padding-right: 15px;
+    flex-grow: 1;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.9em;
+}
+
+/* 🛑 CAMBIO: Estilos mejorados para Inputs, Textareas y Selects */
+.modal-content input:not([type="file"]):not([type="hidden"]),
+.modal-content input[type="url"],
+.modal-content textarea,
+.modal-content .input-select {
+    /* Nuevo selector para el SELECT */
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    /* Sombra interna para efecto de "hundido" */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-content input:not([type="file"]):focus,
+.modal-content textarea:focus,
+.modal-content .input-select:focus {
+    /* Añadido .input-select:focus */
+    border-color: var(--primary-color);
+    /* 🛑 CAMBIO: Contorno de color verde (Primary Color) */
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25);
+    outline: none;
+}
+
+.modal-content textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal-content input[type="file"] {
+    padding: 10px 0;
+    /* Ajustar padding para file input */
+}
+
+/* Footer del Formulario (Botones) */
+.form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+    flex-shrink: 0;
+    /* Evita que el footer se encoja */
+}
+
+.btn-primary-modal,
+.btn-cancel-modal {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary-modal {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary-modal:hover {
+    background-color: var(--hover-color);
+}
+
+.btn-cancel-modal {
+    background-color: #e0e0e0;
+    color: #333;
+    margin-left: 10px;
+}
+
+.btn-cancel-modal:hover {
+    background-color: #ccc;
+}
+
+/* Estilos para Controles de Paginación */
+.pagination-controls {
+    display: flex;
+    justify-content: flex-end;
+    /* Alinear a la derecha, debajo de la tabla */
+    align-items: center;
+    padding: 15px 0 5px;
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    flex-wrap: wrap;
+    /* Para manejo en pantallas pequeñas */
+}
+
+.btn-pagination,
+.btn-pagination-nav,
+.page-btn {
+    background-color: #f8f8f8;
+    color: #555;
+    border: 1px solid #ddd;
+    padding: 8px 12px;
+    margin: 0 4px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.btn-pagination:hover:not(.active):not([disabled]),
+.btn-pagination-nav:hover:not([disabled]){
+    background-color: #e0e0e0;
+}
+
+/* Estilo para la página activa (verde) */
+.btn-pagination.active,
+.page-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    font-weight: 700;
+}
+
+.btn-pagination-nav[disabled]
+.page-btn-nav[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-info {
+    margin-left: 20px;
+    font-size: 0.9em;
+    color: #777;
+}
+
+
+/* -------------------------------------- */
+/* ESTILOS PARA BUSCADOR Y FILTRADOR */
+/* -------------------------------------- */
+
+/* Contenedor principal para alinear el buscador y el filtro */
+.filter-controls-container {
+    display: flex;
+    gap: 15px; /* Espacio entre el buscador y el filtro */
+    margin: 15px 0;
+    padding: 10px;
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.search-box {
+    flex-grow: 1; /* El buscador toma la mayor parte del espacio */
+}
+
+.role-filter-box {
+    flex-shrink: 0; /* El filtro mantiene su tamaño */
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.input-text-search {
+    width: 55% !important;
+    padding: 10px 40px 10px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box; 
+    font-size: 14px;
+}
+
+.input-select-filter {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: #fff;
+}
+
+
+/* -------------------------------------- */
+/* ESTILOS PARA COLOREAR FILAS POR ROL */
+/* -------------------------------------- */
+
+/* Color por defecto para filas inactivas (soft delete) */
+.data-table tr.inactive-record {
+    opacity: 0.6;
+    background-color: #ffeaea; /* Fondo muy claro para indicar inactividad */
+    text-decoration: line-through;
+}
+
+/* 🟢 ADMINISTRADOR: Color para la fila */
+.data-table tr.role-administrador {
+    background-color: #f0f8ff; /* Azul claro o similar (Admin) */
+    border-left: 5px solid #007bff; /* Barra lateral azul */
+}
+
+/* 🟢 EMPLEADO: Color para la fila */
+.data-table tr.role-empleado {
+    background-color: #f0fff0; /* Verde claro o similar (Empleado) */
+    border-left: 5px solid #28a745; /* Barra lateral verde */
+}
+
+/* 🟢 CLIENTE: Color para la fila */
+.data-table tr.role-cliente {
+    background-color: #fff8f0; /* Naranja claro o similar (Cliente) */
+    border-left: 5px solid #ffc107; /* Barra lateral naranja/amarilla */
+}
+
+/* Asegurar que las filas inactivas no tomen el color de rol si son inactivas */
+.data-table tr.inactive-record.role-administrador,
+.data-table tr.inactive-record.role-empleado,
+.data-table tr.inactive-record.role-cliente {
+    background-color: #ffeaea; /* Sobrescribe el color de rol si está inactivo */
+    border-left: none; /* Quita la barra lateral de rol */
+}
+
+
+.header-controls-wrapper {
+    /* Contenedor flexible */
+    display: flex;
+    /* Distribuye el espacio entre los elementos */
+    justify-content: space-between; 
+    /* Alinea todos los elementos verticalmente en el centro */
+    align-items: center; 
+    margin-bottom: 15px; /* Espacio antes del buscador */
+}
+
+.header-controls-wrapper h2 {
+    /* Elimina el margen por defecto del h2 para que la alineación sea perfecta */
+    margin: 0; 
+    /* El flex-grow 1 le da al título espacio para respirar */
+    flex-grow: 1; 
+}
+
+.action-buttons {
+    /* Asegura que el botón no se estire y separe un poco del contador */
+    margin-right: 20px; 
+    /* Importante para que el h2 tome el espacio flexible y empuje el botón */
+    flex-shrink: 0; 
+}
+
+.record-count-wrapper {
+    /* Asegura que el texto del contador se mantenga en una sola línea */
+    white-space: nowrap; 
+    flex-shrink: 0;
+}
