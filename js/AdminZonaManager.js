@@ -36,41 +36,60 @@ export class AdminZonaManager {
         this.initialLocalidadId = null;
         
         this.crudListenersInitialized = false; 
+        this._boundHandleDelegatedClick = this._handleDelegatedClick.bind(this); 
 
         this.setupModalListeners();
+    }
+    
+    _resetInitialIds() {
+        this.initialDepartamentoId = null;
+        this.initialMunicipioId = null;
+        this.initialLocalidadId = null;
+    }
+    
+    cleanupListeners() {
+        if (this.crudListenersInitialized) {
+            this.displayElement.removeEventListener('click', this._boundHandleDelegatedClick);
+            this.crudListenersInitialized = false;
+        }
     }
 
     setupModalListeners() {
         document.getElementById('close-modal-btn')?.addEventListener('click', () => {
             this.modal.classList.remove('active');
+            this._resetInitialIds();
         });
 
         this.modal.addEventListener('click', (e) => {
             if (e.target.id === this.modal.id) {
                 this.modal.classList.remove('active');
+                this._resetInitialIds();
             }
         });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 this.modal.classList.remove('active');
+                this._resetInitialIds();
             }
         });
     }
 
     filterData() {
-        let data = this.fullData;
+        const data = this.fullData;
         const term = this.currentSearchTerm.toLowerCase().trim();
 
-        if (term) {
-            return data.filter(row => {
-                const nombreZona = String(row.nombre || '').toLowerCase();
-                const nombreLocalidad = String(row.l?.nombre || '').toLowerCase();
-
-                return nombreZona.includes(term) || nombreLocalidad.includes(term);
-            });
+        if (!term) {
+            return data;
         }
-        return data;
+        
+        const filtered = data.filter(row => {
+            const nombreZona = String(row.nombre || '').toLowerCase();
+            const nombreLocalidad = String(row.l?.nombre || '').toLowerCase();
+            return nombreZona.includes(term) || nombreLocalidad.includes(term);
+        });
+
+        return filtered;
     }
 
     async loadTable() {
@@ -106,7 +125,10 @@ export class AdminZonaManager {
             this.fullData = data;
             this.currentPage = 1;
             this.currentSearchTerm = '';
+            
             this.renderCurrentPage();
+
+            this._setupCrudListenersDelegated(tableName); 
 
         } catch (e) {
             tableContentWrapper.innerHTML = `<p class="error-message">Error al cargar la tabla ${linkText}: ${e.message}</p>`;
@@ -146,7 +168,6 @@ export class AdminZonaManager {
 
     _updateTableBodyOnly(dataSlice, isCrudTable, indexOffset) {
         const tableBody = this.displayElement.querySelector('.data-table tbody');
-        const paginationControls = this.displayElement.querySelector('.pagination-controls');
         const recordCountSpan = this.displayElement.querySelector('.record-count');
 
         const tableName = this.currentTable;
@@ -162,9 +183,13 @@ export class AdminZonaManager {
                 this.renderRow(row, tableName, isCrudTable, indexOffset + index)
             ).join('');
         }
+        
+        const tableContentWrapper = this.displayElement.querySelector('#table-content-wrapper');
+        const oldPagination = this.displayElement.querySelector('.pagination-controls');
 
-        if (paginationControls) {
-            paginationControls.outerHTML = this._renderPaginationControls(totalPages);
+        if (tableContentWrapper && oldPagination) {
+            oldPagination.remove(); 
+            tableContentWrapper.insertAdjacentHTML('beforeend', this._renderPaginationControls(totalPages));
         }
 
         this.setupPaginationListeners();
@@ -198,8 +223,7 @@ export class AdminZonaManager {
             this._updateTableBodyOnly(dataSlice, true, startIndex);
         }
 
-        this.enableCrudListeners(tableName);
-        this.setupSearchAndFilterListeners();
+        this.setupPaginationListeners();
     }
 
 
@@ -261,7 +285,9 @@ export class AdminZonaManager {
         const searchInput = this.displayElement.querySelector('#table-search-input');
 
         if (searchInput) {
-            searchInput.addEventListener('input', () => {
+            searchInput.removeEventListener('input', this._handleSearchInput);
+            
+            this._handleSearchInput = () => {
                 const newTerm = searchInput.value;
 
                 if (this.currentSearchTerm === newTerm) return;
@@ -280,7 +306,9 @@ export class AdminZonaManager {
                     this.currentPage = 1;
                     this.renderCurrentPage();
                 }, 300);
-            });
+            };
+
+            searchInput.addEventListener('input', this._handleSearchInput);
         }
     }
 
@@ -288,6 +316,7 @@ export class AdminZonaManager {
     async showForm(tableName, action, id = null) {
         const configForm = CRUD_FIELDS_CONFIG[tableName];
         const service = SERVICE_MAP[tableName];
+        const actionText = action === 'create' ? 'Crear' : 'Editar';
 
         if (!configForm || !service) {
             alert(`Error: Configuración o Servicio no encontrado para la tabla ${tableName}.`);
@@ -298,11 +327,10 @@ export class AdminZonaManager {
 
         this.modalTitle.textContent = titleText;
         this.modalBody.innerHTML = this.loadingHTML;
+        this.modal.classList.add('active');
 
         let formData = {};
-        this.initialDepartamentoId = null;
-        this.initialMunicipioId = null;
-        this.initialLocalidadId = null;
+        this._resetInitialIds();
 
         if (action === 'edit' && id) {
             try {
@@ -325,11 +353,8 @@ export class AdminZonaManager {
         }
 
         let departamentoOptions = [];
-        let municipioOptions = [];
-        let localidadOptions = [];
         try {
             departamentoOptions = await SERVICE_MAP['departamento'].getSelectOptions();
-
         } catch (e) {
             this.modalBody.innerHTML = `<p class="error-message">Error al cargar datos de cascada: ${e.message}</p>`;
             return;
@@ -351,13 +376,11 @@ export class AdminZonaManager {
                 if (field.name === 'id_departamento') {
                     options = departamentoOptions;
                 } else if (field.name === 'id_municipio') {
-                    options = municipioOptions;
-                    isDisabled = disabledAttrBase || (action === 'edit' ? 'disabled' : (!this.initialDepartamentoId && action === 'create' ? 'disabled' : ''));
+                    isDisabled = disabledAttrBase || (action === 'create' && !this.initialDepartamentoId ? 'disabled' : ''); 
                     selectPlaceholder = action === 'edit' ? 'Cargando municipios...' : 'Seleccione un departamento primero';
 
                 } else if (field.name === 'id_localidad') {
-                    options = localidadOptions;
-                    isDisabled = disabledAttrBase || (action === 'edit' ? 'disabled' : (!this.initialMunicipioId && action === 'create' ? 'disabled' : ''));
+                    isDisabled = disabledAttrBase || (action === 'create' && !this.initialMunicipioId ? 'disabled' : '');
                     selectPlaceholder = action === 'edit' ? 'Cargando localidades...' : 'Seleccione un municipio primero';
                 }
 
@@ -378,7 +401,7 @@ export class AdminZonaManager {
                 `;
             }
 
-            const nombreDisabledAttr = action === 'create' && field.name === 'nombre' ? 'disabled' : disabledAttrBase;
+            const nombreDisabledAttr = action === 'create' && field.name === 'nombre' && !this.initialLocalidadId ? 'disabled' : disabledAttrBase;
             return `
                 <div class="form-group">
                     <label for="${field.name}">${field.label}:</label>
@@ -386,49 +409,41 @@ export class AdminZonaManager {
                 </div>
             `;
         }).join('');
-
+        
         const formHTML = `
-            <form id="crud-form">
-                ${formFieldsHTML}
-                <div class="form-footer">
-                    <button type="submit" class="btn-primary-modal">
-                        <i class="fas fa-save"></i> ${action === 'create' ? 'Crear' : 'Guardar Cambios'}
-                    </button>
-                    <button type="button" class="btn-cancel-modal" id="form-cancel-btn">Cancelar</button>
-                </div>
-            </form>
-        `;
-
+             <form id="crud-form">
+                 ${formFieldsHTML}
+                 <div class="form-footer">
+                     <button type="submit" class="btn-primary-modal">
+                         <i class="fas fa-save"></i> ${action === 'create' ? 'Crear' : 'Guardar Cambios'}
+                     </button>
+                     <button type="button" class="btn-cancel-modal" id="form-cancel-btn">Cancelar</button>
+                 </div>
+             </form>
+         `;
+        
         this.modalBody.innerHTML = formHTML;
-        this.modal.classList.add('active');
 
+        const departamentoSelect = this.modalBody.querySelector('#id_departamento');
+        const municipioSelect = this.modalBody.querySelector('#id_municipio');
+        const localidadSelect = this.modalBody.querySelector('#id_localidad');
+        const nombreInput = this.modalBody.querySelector('#nombre');
 
-        const departamentoSelect = document.getElementById('id_departamento');
-        const municipioSelect = document.getElementById('id_municipio');
-        const localidadSelect = document.getElementById('id_localidad');
-        const nombreInput = document.getElementById('nombre');
-        const self = this;
 
         const loadLocalidades = async (selectedMuniId) => {
             localidadSelect.innerHTML = '<option value="" disabled selected>Cargando localidades...</option>';
             localidadSelect.disabled = true;
             if (nombreInput && action === 'create') nombreInput.disabled = true;
 
-
             if (selectedMuniId) {
                 try {
                     const options = await SERVICE_MAP['localidad'].getSelectOptions(selectedMuniId);
-                    const selectedLocalidadId = self.initialLocalidadId;
-
+                    const selectedLocalidadId = this.initialLocalidadId;
                     localidadSelect.innerHTML = '<option value="" disabled selected>Seleccione una localidad</option>' +
                         options.map(opt => `<option value="${opt.value}" ${String(selectedLocalidadId) === String(opt.value) ? 'selected' : ''}>${opt.text}</option>`).join('');
                     localidadSelect.disabled = false;
-
-                    self.initialLocalidadId = null;
-
-                    if (localidadSelect.value && nombreInput && action === 'create') {
-                        nombreInput.disabled = false;
-                    } 
+                    this.initialLocalidadId = null; 
+                    if (localidadSelect.value && nombreInput && action === 'create') nombreInput.disabled = false; 
 
                 } catch (error) {
                     localidadSelect.innerHTML = '<option value="" disabled selected>Error al cargar localidades</option>';
@@ -448,19 +463,14 @@ export class AdminZonaManager {
             if (selectedDeptId) {
                 try {
                     const options = await SERVICE_MAP['municipio'].getSelectOptions(selectedDeptId);
-                    const selectedMuniId = self.initialMunicipioId;
+                    const selectedMuniId = this.initialMunicipioId;
                     
                     municipioSelect.innerHTML = '<option value="" disabled selected>Seleccione un municipio</option>' +
                         options.map(opt => `<option value="${opt.value}" ${String(selectedMuniId) === String(opt.value) ? 'selected' : ''}>${opt.text}</option>`).join('');
                     municipioSelect.disabled = false;
 
-                    if (selectedMuniId) {
-                        await loadLocalidades(selectedMuniId);
-                    } else {
-                        localidadSelect.innerHTML = '<option value="" disabled selected>Seleccione un municipio primero</option>';
-                        localidadSelect.disabled = true;
-                    }
-                    self.initialMunicipioId = null;
+                    if (selectedMuniId) await loadLocalidades(selectedMuniId);
+                    this.initialMunicipioId = null;
                 } catch (error) {
                     municipioSelect.innerHTML = '<option value="" disabled selected>Error al cargar municipios</option>';
                 }
@@ -468,20 +478,17 @@ export class AdminZonaManager {
                 municipioSelect.innerHTML = '<option value="" disabled selected>Seleccione un departamento primero</option>';
             }
         };
-
-        departamentoSelect.addEventListener('change', (e) => {
+        
+        departamentoSelect?.addEventListener('change', (e) => {
             loadMunicipios(e.target.value);
         });
-        municipioSelect.addEventListener('change', (e) => {
-            self.initialLocalidadId = null;
+
+        municipioSelect?.addEventListener('change', (e) => {
+            this.initialLocalidadId = null;
             loadLocalidades(e.target.value);
         });
 
-        if (action === 'edit' && this.initialDepartamentoId) {
-            loadMunicipios(this.initialDepartamentoId);
-        }
-
-        localidadSelect.addEventListener('change', (e) => {
+        localidadSelect?.addEventListener('change', (e) => {
             if (action === 'create') {
                 if (e.target.value && nombreInput) {
                     nombreInput.disabled = false;
@@ -492,18 +499,23 @@ export class AdminZonaManager {
         });
 
 
-        document.getElementById('crud-form').addEventListener('submit', (e) => {
+        if (action === 'edit' && this.initialDepartamentoId) {
+            loadMunicipios(this.initialDepartamentoId);
+        }
+
+        this.modalBody.querySelector('#crud-form')?.addEventListener('submit', (e) => {
             e.preventDefault();
             this.handleFormSubmit(tableName, action, id);
         });
 
-        document.getElementById('form-cancel-btn').addEventListener('click', () => {
+        this.modalBody.querySelector('#form-cancel-btn')?.addEventListener('click', () => {
             this.modal.classList.remove('active');
+            this._resetInitialIds();
         });
     }
 
     async handleFormSubmit(tableName, action, id = null) {
-        const form = document.getElementById('crud-form');
+        const form = this.modalBody.querySelector('#crud-form');
         const service = SERVICE_MAP[tableName];
 
         if (!service) return;
@@ -530,6 +542,7 @@ export class AdminZonaManager {
             }
 
             this.modal.classList.remove('active');
+            this._resetInitialIds();
             this.loadTable();
         } catch (error) {
             alert(`Error al guardar: ${error.message}`);
@@ -551,37 +564,55 @@ export class AdminZonaManager {
         }
     }
 
-    enableCrudListeners(tableName) {
+    _handleDelegatedClick(e) {
+        const target = e.target.closest('.btn-action, .btn-create');
+
+        if (!target) return;
+        
+        if (target.classList.contains('btn-create')) {
+            const targetTable = target.getAttribute('data-table');
+            if (targetTable !== this.currentTable) { 
+                return;
+            }
+        } else {
+             const id = target.getAttribute('data-id');
+             const config = REPORT_CONFIG[this.currentTable];
+             
+             const isIdInCurrentData = this.fullData.some(d => String(d[config.id_key]) === id);
+             
+             if (id && !isIdInCurrentData) {
+                 return;
+             }
+        }
+
+        e.preventDefault();
+
+        if (target.classList.contains('btn-create')) {
+            this.showForm(this.currentTable, 'create');
+        } else if (target.classList.contains('btn-edit')) {
+            const id = target.getAttribute('data-id');
+            this.showForm(this.currentTable, 'edit', id); 
+        } else if (target.classList.contains('btn-delete')) {
+            const id = target.getAttribute('data-id');
+            const rowData = this.fullData.find(d => String(d[REPORT_CONFIG[this.currentTable].id_key]) === id);
+            const isVisible = rowData?.visible !== false;
+
+            if (!isVisible) return;
+
+            if (confirm(`¿Está seguro de eliminar esta Zona?`)) {
+                this.toggleVisibility(id, isVisible);
+            }
+        }
+    }
+
+
+    _setupCrudListenersDelegated(tableName) {
         if (this.crudListenersInitialized) {
-            this.setupPaginationListeners();
+            this.setupPaginationListeners(); 
             return;
         }
 
-        const self = this;
-        this.displayElement.addEventListener('click', function(e) {
-            const target = e.target.closest('.btn-action, .btn-create');
-
-            if (!target) return;
-
-            e.preventDefault();
-
-            if (target.classList.contains('btn-create')) {
-                self.showForm(tableName, 'create');
-            } else if (target.classList.contains('btn-edit')) {
-                const id = target.getAttribute('data-id');
-                self.showForm(tableName, 'edit', id); 
-            } else if (target.classList.contains('btn-delete')) {
-                const id = target.getAttribute('data-id');
-                const rowData = self.fullData.find(d => String(d[REPORT_CONFIG[tableName].id_key]) === id);
-                const isVisible = rowData?.visible !== false;
-
-                if (!isVisible) return;
-
-                if (confirm(`¿Está seguro de eliminar esta Zona?`)) {
-                    self.toggleVisibility(id, isVisible);
-                }
-            }
-        });
+        this.displayElement.addEventListener('click', this._boundHandleDelegatedClick);
 
         this.crudListenersInitialized = true;
         this.setupPaginationListeners();
@@ -617,7 +648,7 @@ export class AdminZonaManager {
     }
 
     setupPaginationListeners() {
-        this.displayElement.querySelectorAll('.page-btn').forEach(button => {
+        this.displayElement.querySelectorAll('.pagination-controls .page-btn').forEach(button => {
             button.addEventListener('click', (e) => {
                 const page = parseInt(e.currentTarget.getAttribute('data-page'));
                 if (!isNaN(page) && page >= 1) {

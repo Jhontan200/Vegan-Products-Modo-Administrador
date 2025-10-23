@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const displayElementId = 'content-display';
     const modalId = 'crud-modal';
 
+    let currentManager = null; 
+
     const productManager = new AdminProductManager(displayElementId, modalId);
     const categoryManager = new AdminCategoryManager(displayElementId, modalId);
     const userManager = new AdminUserManager(displayElementId, modalId);
@@ -71,10 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
             link.classList.add('active');
 
             const tableName = link.getAttribute('data-table');
-            const manager = managerMap[tableName];
+            const newManager = managerMap[tableName];
 
-            if (manager && manager.loadTable) {
-                manager.loadTable();
+            if (newManager && newManager.loadTable) {
+                
+                if (currentManager && currentManager !== newManager && typeof currentManager.cleanupListeners === 'function') {
+                    currentManager.cleanupListeners();
+                }
+                
+                newManager.loadTable();
+                
+                currentManager = newManager;
+                
                 console.log(`[Router] Cargando tabla ${tableName} con su Manager especializado.`);
 
             } else {
@@ -93,6 +103,10 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.removeItem("usuarioEmail");
         localStorage.removeItem("usuarioId");
         localStorage.removeItem("usuarioRol");
+        
+        if (currentManager && typeof currentManager.cleanupListeners === 'function') {
+            currentManager.cleanupListeners();
+        }
 
         const result = await authManager.cerrarSesion();
 
@@ -105,6 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     productManager.loadTable();
+    currentManager = productManager;
     console.log('[Router] Carga inicial: Tabla Productos.');
 
     const productNavLink = document.querySelector('.nav-list li a[data-table="producto"]');
