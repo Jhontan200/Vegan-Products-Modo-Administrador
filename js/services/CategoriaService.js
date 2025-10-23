@@ -1,20 +1,13 @@
-// CategoriaService.js - CÓDIGO CORREGIDO
-
 import { supabase } from '../supabaseClient.js';
 import { REPORT_CONFIG } from '../config/tableConfigs.js';
 
 const TABLE_NAME = 'categoria';
-// Asegúrate de que REPORT_CONFIG[TABLE_NAME] exista y contenga id_key
 const CONFIG = REPORT_CONFIG[TABLE_NAME] || { id_key: 'id', select: '*' };
 
 export const CategoriaService = {
-    /**
-     * Obtiene solo los registros VISIBLES (visible = true) para el panel de administración.
-     */
     async fetchData() {
         let query = supabase.from(TABLE_NAME)
             .select(CONFIG.select)
-            // FILTRO: Solo visible = true para la vista del administrador
             .eq('visible', true)
             .order('id', { ascending: true });
 
@@ -27,9 +20,6 @@ export const CategoriaService = {
         return data;
     },
 
-    /**
-     * Obtiene un registro por su ID para edición.
-     */
     async getById(id) {
         const { data, error } = await supabase.from(TABLE_NAME)
             .select('*')
@@ -43,14 +33,9 @@ export const CategoriaService = {
         return data;
     },
 
-    /**
-     * Crea un nuevo registro.
-     * ✅ CORREGIDO: Espera 'payload' (objeto simple) en lugar de 'formData'.
-     */
     async create(payload) {
-        // Acceder a la propiedad del objeto con notación de punto, NO con .get()
         const nombre = payload.nombre;
-        const visible = payload.visible; // Esto ya debería ser 'true' desde AdminCategoryManager.js
+        const visible = payload.visible;
 
         const { error } = await supabase.from(TABLE_NAME)
             .insert([{ nombre, visible }]);
@@ -61,16 +46,10 @@ export const CategoriaService = {
         }
     },
 
-    /**
-     * Actualiza un registro existente.
-     * ✅ CORREGIDO: Espera 'payload' (objeto simple) en lugar de 'formData'.
-     */
     async update(id, payload) {
-        // Acceder a la propiedad del objeto con notación de punto, NO con .get()
         const nombre = payload.nombre;
         const visible = payload.visible;
 
-        // Actualizamos ambos campos, nombre y visible (que siempre es true al editar desde el form)
         const { error } = await supabase.from(TABLE_NAME)
             .update({ nombre: nombre, visible: visible })
             .eq(CONFIG.id_key, id);
@@ -81,14 +60,8 @@ export const CategoriaService = {
         }
     },
 
-    /**
-     * Implementa la 'soft delete' (inhabilitación) invirtiendo el campo 'visible'.
-     */
     async softDelete(id) {
-        // ... (Este método no necesita cambios ya que no usa formData)
-
         const current = await this.getById(id);
-        // Invierte el estado de visibilidad actual
         const newVisibleState = !current.visible;
 
         const { error } = await supabase.from(TABLE_NAME)
@@ -102,10 +75,6 @@ export const CategoriaService = {
         return newVisibleState;
     },
 
-    /**
-     * Función requerida para el SELECT del formulario de Producto,
-     * solo incluye categorías VISIBLES y ordenadas por ID ascendente.
-     */
     async getSelectOptions() {
         const { data, error } = await supabase.from(TABLE_NAME)
             .select('id, nombre')

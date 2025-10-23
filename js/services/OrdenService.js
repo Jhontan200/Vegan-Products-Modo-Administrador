@@ -16,9 +16,6 @@ export const OrdenService = {
         const validParams = params && typeof params === 'object' ? params : {};
         const { select, order } = validParams;
 
-        // **INICIO DE LA MODIFICACIÓN**
-
-        // Definición de la consulta COMPLETA que incluye la jerarquía de la dirección (joins anidados)
         const FULL_TABLE_SELECT = `*,
             u:usuario!id_usuario(ci),
             d:direccion!id_direccion(
@@ -40,11 +37,7 @@ export const OrdenService = {
             )
         `;
         
-        // Si no se proporciona un 'select' personalizado (o es solo '*'), 
-        // usamos la consulta completa para asegurar que los nombres de la dirección se carguen.
         const selectQuery = typeof select === 'string' && select.length > 0 && select !== '*' ? select : FULL_TABLE_SELECT;
-
-        // **FIN DE LA MODIFICACIÓN**
 
         const orderString = typeof order === 'string' ? order : null;
         const orderParts = orderString ? orderString.split('.') : ['id', 'asc'];

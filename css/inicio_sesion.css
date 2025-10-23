@@ -1,14 +1,9 @@
-/* Paleta de Colores de tu NavBar */
 :root {
     --color-primary-green: #80CC28;
-    /* Verde Principal */
     --color-hover-green: rgb(79, 134, 15);
-    /* Verde Hover */
     --color-active-green: #17542A;
-    /* Verde Activo/Oscuro */
     --color-text-dark: #333333;
     --color-background: #F0FFF0;
-    /* Fondo muy claro (como el anterior ejemplo) */
     --color-gray-label: #4B5563;
     --color-input-border: #D1D5DB;
     --color-error-red: #EF4444;
@@ -18,7 +13,6 @@
 * {
     box-sizing: border-box;
     font-family: sans-serif;
-    /* Usamos una fuente genérica por simplicidad */
 }
 
 body {
@@ -37,7 +31,6 @@ section {
     margin: auto;
 }
 
-/* Contenedor Principal del Formulario */
 #auth-view {
     background-color: white;
     padding: 40px;
@@ -46,7 +39,6 @@ section {
     transition: all 0.3s ease;
 }
 
-/* Títulos */
 h1 {
     font-size: 1.875rem;
     font-weight: 700;
@@ -61,7 +53,6 @@ p {
     margin-bottom: 24px;
 }
 
-/* Estructura del Formulario */
 #login-form>div {
     margin-bottom: 1rem;
 }
@@ -74,7 +65,6 @@ label {
     margin-bottom: 4px;
 }
 
-/* 🛑 ESTILOS BASE CORREGIDOS */
 input[type="email"],
 input[type="password"],
 input[type="text"] { 
@@ -89,7 +79,6 @@ input[type="text"] {
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
-/* 🛑 ESTILOS DE FOCO CORREGIDOS */
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="text"]:focus { 
@@ -98,7 +87,6 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(128, 204, 40, 0.5);
 }
 
-/* Botón Ingresar */
 .btn-primary {
     width: 100%;
     padding: 10px 16px;
@@ -122,7 +110,6 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 4px rgba(23, 84, 42, 0.5);
 }
 
-/* Mensaje de Éxito */
 #success-message {
     display: none;
     text-align: center;
@@ -144,7 +131,6 @@ input[type="text"]:focus {
     color: var(--color-gray-label);
 }
 
-/* Botón Cerrar Sesión */
 .btn-logout {
     margin-top: 16px;
     padding: 4px 12px;
@@ -162,7 +148,6 @@ input[type="text"]:focus {
     background-color: var(--color-error-red-hover);
 }
 
-/* Media Query para móvil */
 @media (max-width: 650px) {
     #auth-view {
         padding: 24px;

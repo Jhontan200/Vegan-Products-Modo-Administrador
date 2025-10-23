@@ -3,13 +3,9 @@ import { REPORT_CONFIG } from '../config/tableConfigs.js';
 
 const TABLE_NAME = 'municipio';
 const ID_KEY = 'id_municipio';
-// Incluimos el nombre del departamento en la selección para la tabla de reporte
 const CONFIG = REPORT_CONFIG[TABLE_NAME] || { id_key: ID_KEY, select: 'id_municipio, nombre, id_departamento, visible, departamento!inner(nombre)' };
 
 export const MunicipioService = {
-    /**
-     * Obtiene solo los registros VISIBLES, incluyendo el nombre del departamento.
-     */
     async fetchData() {
         let query = supabase.from(TABLE_NAME)
             .select(CONFIG.select)
@@ -25,9 +21,6 @@ export const MunicipioService = {
         return data;
     },
 
-    /**
-     * Obtiene un registro por su ID para edición.
-     */
     async getById(id) {
         const { data, error } = await supabase.from(TABLE_NAME)
             .select('*')
@@ -41,11 +34,6 @@ export const MunicipioService = {
         return data;
     },
 
-    /**
-     * Crea un nuevo registro.
-     * ✅ CORRECCIÓN: Ahora espera un objeto 'payload'.
-     * 🛑 CORRECCIÓN: Manejo de error por duplicidad (23505).
-     */
     async create(payload) {
         const { nombre, id_departamento } = payload;
         const visible = true;
@@ -56,7 +44,6 @@ export const MunicipioService = {
         if (error) {
             console.error('Error al crear municipio:', error);
 
-            // Detección de error de duplicidad (código 23505) en nombre/departamento
             if (error.code === '23505') {
                 throw new Error(`Ya existe un municipio con el nombre "${nombre}" en el departamento seleccionado.`);
             }
@@ -65,13 +52,7 @@ export const MunicipioService = {
         }
     },
 
-    /**
-     * Actualiza un registro existente.
-     * ✅ CORRECCIÓN: Ahora espera un objeto 'payload'.
-     * 🛑 CORRECCIÓN: Manejo de error por duplicidad (23505).
-     */
     async update(id, payload) {
-        // Desestructuramos para obtener solo los campos que se pueden actualizar
         const { nombre, id_departamento } = payload;
 
         const updateData = {
@@ -86,7 +67,6 @@ export const MunicipioService = {
         if (error) {
             console.error('Error al actualizar municipio:', error);
 
-            // Detección de error de duplicidad (código 23505) en nombre/departamento
             if (error.code === '23505') {
                 throw new Error(`Ya existe otro municipio con el nombre "${nombre}" en el departamento seleccionado.`);
             }
@@ -95,9 +75,6 @@ export const MunicipioService = {
         }
     },
 
-    /**
-     * Implementa la 'soft delete' (inhabilitación) invirtiendo el campo 'visible'.
-     */
     async softDelete(id) {
         const current = await this.getById(id);
         const newVisibleState = !current.visible;
@@ -113,9 +90,6 @@ export const MunicipioService = {
         return newVisibleState;
     },
 
-    /**
-     * Función para SELECT options. Permite filtrar por Departamento.
-     */
     async getSelectOptions(departamentoId = null) {
         let query = supabase.from(TABLE_NAME)
             .select(`${ID_KEY}, nombre`)

@@ -1,5 +1,3 @@
-// DepartamentoService.js (CORREGIDO)
-
 import { supabase } from '../supabaseClient.js';
 import { REPORT_CONFIG } from '../config/tableConfigs.js';
 
@@ -8,13 +6,9 @@ const ID_KEY = 'id_departamento';
 const CONFIG = REPORT_CONFIG[TABLE_NAME] || { id_key: ID_KEY, select: 'id_departamento, nombre, visible' };
 
 export const DepartamentoService = {
-    /**
-     * Obtiene solo los registros VISIBLES (visible = true) para el panel de administración.
-     */
     async fetchData() {
         let query = supabase.from(TABLE_NAME)
             .select(CONFIG.select)
-            // FILTRO: Solo visible = true
             .eq('visible', true)
             .order(ID_KEY, { ascending: true });
 
@@ -27,9 +21,6 @@ export const DepartamentoService = {
         return data;
     },
 
-    /**
-     * Obtiene un registro por su ID para edición.
-     */
     async getById(id) {
         const { data, error } = await supabase.from(TABLE_NAME)
             .select('*')
@@ -43,11 +34,6 @@ export const DepartamentoService = {
         return data;
     },
 
-    /**
-     * Crea un nuevo registro.
-     * ✅ CORRECCIÓN: Espera un objeto 'payload' en lugar de 'formData'.
-     * 🛑 CORRECCIÓN: Manejo de error por duplicidad (23505).
-     */
     async create(payload) {
         const nombre = payload.nombre;
         const visible = true;
@@ -58,7 +44,6 @@ export const DepartamentoService = {
         if (error) {
             console.error('Error al crear departamento:', error);
             
-            // Detección de error de duplicidad (código 23505) en la columna 'nombre'
             if (error.code === '23505') {
                 throw new Error(`Ya existe un departamento con el nombre "${nombre}".`);
             }
@@ -67,14 +52,8 @@ export const DepartamentoService = {
         }
     },
 
-    /**
-     * Actualiza un registro existente.
-     * ✅ CORRECCIÓN: Espera un objeto 'payload' en lugar de 'formData'.
-     * 🛑 CORRECCIÓN: Manejo de error por duplicidad (23505).
-     */
     async update(id, payload) {
         const nombre = payload.nombre;
-        // La visibilidad no suele cambiar en la edición del formulario, pero se puede incluir si payload la tiene.
         const updateData = { nombre: nombre };
 
         const { error } = await supabase.from(TABLE_NAME)
@@ -84,7 +63,6 @@ export const DepartamentoService = {
         if (error) {
             console.error('Error al actualizar departamento:', error);
 
-            // Detección de error de duplicidad (código 23505)
             if (error.code === '23505') {
                 throw new Error(`Ya existe otro departamento con el nombre "${nombre}".`);
             }
@@ -93,12 +71,8 @@ export const DepartamentoService = {
         }
     },
 
-    /**
-     * Implementa la 'soft delete' (inhabilitación) invirtiendo el campo 'visible'.
-     */
     async softDelete(id) {
         const current = await this.getById(id);
-        // Invierte el estado de visibilidad actual
         const newVisibleState = !current.visible;
 
         const { error } = await supabase.from(TABLE_NAME)
@@ -112,9 +86,6 @@ export const DepartamentoService = {
         return newVisibleState;
     },
 
-    /**
-     * Función para SELECT options (solo VISIBLES).
-     */
     async getSelectOptions() {
         const { data, error } = await supabase.from(TABLE_NAME)
             .select(`${ID_KEY}, nombre`)
