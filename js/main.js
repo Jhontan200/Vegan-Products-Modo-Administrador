@@ -1,5 +1,3 @@
-// js/main.js
-
 import { AuthManager } from './authManager.js';
 
 window.togglePassword = function() {
@@ -20,24 +18,18 @@ window.togglePassword = function() {
     }
 };
 
-/**
- * Maneja el evento de inicio de sesión al enviar el formulario.
- * Es la función llamada por el onsubmit="handleLogin(event)" en el HTML.
- */
 window.handleLogin = async function (event) {
-    event.preventDefault(); // Detiene la recarga de la página
+    event.preventDefault();
 
     const authManager = new AuthManager();
 
-    // Selectores alineados con los IDs de tu HTML
     const emailInput = document.getElementById('login-email');
     const passwordInput = document.getElementById('password');
-    const submitButton = event.submitter; // El botón que disparó el submit
+    const submitButton = event.submitter;
 
     const email = emailInput?.value.trim() || "";
     const password = passwordInput?.value.trim() || "";
 
-    // 1. Validaciones
     if (email === "" || password === "") {
         alert("⚠️ No puedes dejar campos vacíos."); return;
     }
@@ -46,10 +38,8 @@ window.handleLogin = async function (event) {
     }
     
 
-    // Deshabilitar botón para evitar múltiples envíos
     if (submitButton) submitButton.disabled = true;
 
-    // 2. Intentar autenticación
     const authResult = await authManager.iniciarSesion(email, password);
 
     if (!authResult.success) {
@@ -58,29 +48,23 @@ window.handleLogin = async function (event) {
         return;
     }
 
-    // 3. Obtener perfil y verificar rol
     const perfilUsuario = await authManager.getPerfilActual();
 
     if (!perfilUsuario || perfilUsuario.rol !== 'administrador') {
-        // Si no es administrador, cierra la sesión iniciada para denegar el acceso
         await authManager.cerrarSesion();
         if (submitButton) submitButton.disabled = false;
         alert("❌ Acceso denegado. Solo los administradores pueden acceder por esta vía.");
         return;
     }
 
-    // 4. Éxito y Redirección
     localStorage.setItem("usuarioEmail", email);
     localStorage.setItem("usuarioId", perfilUsuario.id);
     localStorage.setItem("usuarioRol", perfilUsuario.rol);
 
     alert("✅ ¡Inicio de sesión de Administrador exitoso!");
-    // 🛑 CAMBIO REALIZADO AQUÍ: Redirigir a administracion.html
     window.location.href = "administracion.html";
 }
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    // La función principal handleLogin() está adjunta al evento 'onsubmit' del HTML,
-    // por lo que no se necesita un listener adicional aquí.
 });

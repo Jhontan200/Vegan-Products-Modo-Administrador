@@ -1,5 +1,3 @@
-// js/AdminCategoryManager.js
-
 import { REPORT_CONFIG, CRUD_FIELDS_CONFIG } from './config/tableConfigs.js';
 import { CategoriaService } from './services/CategoriaService.js'; 
 

@@ -597,29 +597,20 @@ export class AdminOrdenManager {
                 initialCiValue = formData.ci_cliente || '';
                 direccionData = formData.direccion_data;
                 
-                // INICIO DE LA CORRECCIÓN -----------------------------------------
                 if (formData.id_direccion) {
-                    // El OrdenService ya trae la jerarquía en esta propiedad.
-                    // Usamos esta propiedad para inicializar los selects.
                     addressHierarchy = formData.addressHierarchy || {}; 
 
-                    // Desactivamos la llamada redundante a _fetchAddressHierarchy.
-                    // addressHierarchy = await this._fetchAddressHierarchy(formData.id_direccion); 
-
                     if (direccionData) {
-                        // Asignar datos de detalle de la dirección
                         formData['calle_avenida'] = direccionData.calle_avenida;
                         formData['numero_casa_edificio'] = direccionData.numero_casa_edificio;
                         formData['referencia_adicional'] = direccionData.referencia_adicional;
 
-                        // Asignar los IDs de la jerarquía para inicializar los selects en cascada
                         formData['id_departamento_form'] = addressHierarchy.id_departamento;
                         formData['id_municipio_form'] = addressHierarchy.id_municipio;
                         formData['id_localidad_form'] = addressHierarchy.id_localidad;
                         formData['id_zona'] = addressHierarchy.id_zona;
                     }
                 }
-                // FIN DE LA CORRECCIÓN -----------------------------------------
 
             } catch (e) {
                 this.modalBody.innerHTML = `<p class="error-message">Error al cargar datos del registro. ${e.message}</p>`;
@@ -721,7 +712,6 @@ export class AdminOrdenManager {
                     let selectedValue = currentValue;
                     let initialOptionsHTML = '';
 
-                    // Lógica para inicializar selects en edición, usando los datos cargados.
                     if (action === 'edit' && addressHierarchy) {
                         if (fieldConfig.name === 'id_departamento_form') {
                             selectedValue = addressHierarchy.id_departamento;

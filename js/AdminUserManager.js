@@ -3,12 +3,9 @@ import { UsuarioService } from './services/UsuarioService.js';
 
 const SERVICE_MAP = {
     'usuario': UsuarioService,
-    // 'producto': ProductoService, 
-    // 'categoria': CategoriaService,
 };
 
 const TABLES_ALLOWING_CREATE = ['usuario'];
-// 🟢 NUEVO: ID para el contenedor que NO debe re-renderizarse
 const SEARCH_FILTER_CONTAINER_ID = 'search-filter-controls-wrapper'; 
 
 export class AdminUserManager {
@@ -54,20 +51,16 @@ export class AdminUserManager {
         });
     }
 
-    // 🟢 MODIFICADO: setupSearchAndFilterListeners (Ahora el listener es estable)
     setupSearchAndFilterListeners() {
-        // Busca los elementos dentro del contenedor estable
         const searchContainer = document.getElementById(SEARCH_FILTER_CONTAINER_ID);
         if (!searchContainer) return;
         
         const searchInput = searchContainer.querySelector('#table-search-input');
         const roleFilterSelect = searchContainer.querySelector('#table-role-filter');
 
-        // 1. Listener del Buscador (con Debounce)
         if (searchInput) {
             searchInput.value = this.currentSearchTerm;
             
-            // Usamos oninput para sobrescribir y evitar la acumulación de listeners
             searchInput.oninput = () => {
                 const newSearchTerm = searchInput.value;
             
@@ -75,7 +68,6 @@ export class AdminUserManager {
 
                 this.currentSearchTerm = newSearchTerm;
 
-                // DEBOUNCE: Espera 300ms antes de ejecutar la búsqueda
                 this.searchTimeout = setTimeout(() => {
                     
                     if (roleFilterSelect) {
@@ -89,10 +81,8 @@ export class AdminUserManager {
             };
         }
 
-        // 2. Listener del Filtro de Rol
         if (roleFilterSelect) {
             roleFilterSelect.value = this.currentRoleFilter;
-            // Usamos onchange para sobrescribir y evitar la acumulación de listeners
             roleFilterSelect.onchange = () => {
                 this.currentRoleFilter = roleFilterSelect.value;
 
@@ -160,7 +150,6 @@ export class AdminUserManager {
     }
 
     goToPage(page) {
-        // Usa la longitud de los datos FILTRADOS para calcular las páginas.
         const filteredData = this.filterData();
         const totalPages = Math.ceil(filteredData.length / this.itemsPerPage);
 
@@ -200,22 +189,18 @@ export class AdminUserManager {
         }
     }
 
-    // Lógica de filtrado de datos (buscador + filtro de rol)
     filterData() {
         let data = this.fullData;
         const term = this.currentSearchTerm.toLowerCase().trim();
         const role = this.currentRoleFilter;
         const tableName = this.currentTable;
 
-        // 1. Filtrar por Rol (si no es 'todos')
         if (role !== 'todos' && tableName === 'usuario') {
             data = data.filter(row => row.rol && row.rol.toLowerCase() === role);
         }
 
-        // 2. Filtrar por Término de Búsqueda (si existe)
         if (term) {
             if (tableName === 'usuario') {
-                // Ajustado para buscar solo por nombres, apellidos o CI
                 return data.filter(row => {
                     const nombreCompleto = `${row.primer_nombre || ''} ${row.segundo_nombre || ''} ${row.apellido_paterno || ''} ${row.apellido_materno || ''}`.toLowerCase();
                     const ci = String(row.ci || '').toLowerCase();
@@ -223,13 +208,11 @@ export class AdminUserManager {
                     return nombreCompleto.includes(term) || ci.includes(term);
                 });
             }
-            // Puedes agregar lógica de búsqueda para otras tablas aquí si es necesario
         }
 
-        return data; // Retorna los datos filtrados por rol o los datos completos
+        return data;
     }
 
-    // 🟢 NUEVO: Actualiza solo el cuerpo de la tabla para búsqueda y paginación rápida
     _updateTableBodyOnly(dataSlice, isCrudTable, indexOffset) {
         const tableBody = this.displayElement.querySelector('.data-table tbody');
         const paginationControls = this.displayElement.querySelector('.pagination-controls');
@@ -243,28 +226,23 @@ export class AdminUserManager {
             recordCountSpan.textContent = `Total: ${totalRecords} registros visibles (${dataSlice.length} en esta página)`;
         }
 
-        // 1. Reemplazar cuerpo de la tabla
         if (tableBody) {
             tableBody.innerHTML = dataSlice.map((row, index) => 
                 this.renderRow(row, tableName, isCrudTable, indexOffset + index)
             ).join('');
         }
         
-        // 2. Reemplazar paginación
         if (paginationControls) {
             paginationControls.outerHTML = this._renderPaginationControls(totalPages);
         }
 
-        // 3. Reestablecer listeners
         this.enableCrudListeners(tableName);
     }
 
-    // 🟢 MODIFICADO: Carga inicial y configura el listener de búsqueda UNA SOLA VEZ
     async loadTable() {
         const tableName = this.currentTable;
         const linkText = this.currentLinkText;
 
-        // Pre-renderiza la estructura básica con contenedores estables
         this.displayElement.innerHTML = `
             <div class="table-actions">
                 <h2>Gestión de la Tabla: ${linkText}</h2>
@@ -277,7 +255,6 @@ export class AdminUserManager {
             </div>
         `;
 
-        // 🟢 Configura los listeners del buscador y filtro aquí, solo una vez.
         this.setupSearchAndFilterListeners();
         
         const service = SERVICE_MAP[tableName];
@@ -304,7 +281,6 @@ export class AdminUserManager {
         }
     }
 
-    // 🟢 MODIFICADO: Usa _updateTableBodyOnly para actualizaciones rápidas
     renderCurrentPage() {
         const tableName = this.currentTable;
         const linkText = this.currentLinkText;
@@ -326,15 +302,12 @@ export class AdminUserManager {
         const dataSlice = filteredData.slice(startIndex, endIndex);
 
         const tableWrapper = this.displayElement.querySelector('#table-content-wrapper');
-        // Chequea si la tabla ya está dibujada
         const isTableDrawn = tableWrapper && tableWrapper.querySelector('.data-table');
 
         if (!isTableDrawn || dataSlice.length === 0 && this.currentSearchTerm) {
-            // Si es la carga inicial o no hay resultados, renderiza toda la estructura de la tabla (dentro del wrapper)
             this.renderTable(tableName, linkText, dataSlice, true, this.getFixedHeaders(), totalRecords, totalPages);
             this.enableCrudListeners(tableName);
         } else {
-            // OPTIMIZACIÓN CLAVE: Solo actualiza el cuerpo y la paginación
             this._updateTableBodyOnly(dataSlice, true, startIndex);
         }
     }
@@ -354,24 +327,20 @@ export class AdminUserManager {
         return [];
     }
 
-    // 🟢 MODIFICADO: renderTable ahora solo se enfoca en el contenido de la tabla y la paginación (dentro del wrapper)
     renderTable(tableName, linkText, dataSlice, isCrudTable, headers, totalRecords, totalPages) {
         const recordText = 'registros visibles';
         const tableContentWrapper = this.displayElement.querySelector('#table-content-wrapper');
 
-        // Actualizar el conteo de registros en el header
         const recordCountSpan = this.displayElement.querySelector('.record-count');
         if (recordCountSpan) {
              recordCountSpan.textContent = `Total: ${totalRecords} ${recordText} (${dataSlice.length} en esta página)`;
         }
         
-        // Manejar caso de no resultados
         if (!dataSlice || dataSlice.length === 0) {
             tableContentWrapper.innerHTML = `<p class="info-message">No se encontraron ${recordText} en la tabla ${tableName}.</p>`;
             return;
         }
 
-        // Generar el HTML de la tabla y la paginación
         let tableHTML = `
                 <div class="table-responsive">
                 <table class="data-table">
@@ -392,7 +361,6 @@ export class AdminUserManager {
         tableContentWrapper.innerHTML = tableHTML;
     }
 
-    // 🟢 MODIFICADO: Renderiza el filtro y búsqueda dentro del ID estable
     _renderSearchAndFilterBox(tableName) {
         if (tableName !== 'usuario') return ''; 
 
@@ -454,12 +422,11 @@ export class AdminUserManager {
         `;
     }
 
-    // MODIFICADO: Añadir la clase de estilo por rol a la fila
     renderRow(row, tableName, isCrudTable, index) {
         const config = REPORT_CONFIG[tableName];
         const rowId = row[config.id_key];
 
-        const rowNumber = index + 1; // El cálculo completo del N° se pasa desde el llamador
+        const rowNumber = index + 1;
 
         const finalFields = [
             'ci',
@@ -472,7 +439,7 @@ export class AdminUserManager {
 
         const isSelf = rowId === this.sessionUserId;
         const isInactive = !row['visible'];
-        const userRole = row['rol'] ? row['rol'].toLowerCase() : 'desconocido'; // Rol para la clase
+        const userRole = row['rol'] ? row['rol'].toLowerCase() : 'desconocido';
 
         const deleteDisabled = isSelf || isInactive;
         const deleteTitle = isSelf ? 'No puedes inhabilitar tu propia cuenta' : (isInactive ? 'Registro Inhabilitado' : 'Inhabilitar (Soft Delete)');
@@ -498,7 +465,6 @@ export class AdminUserManager {
             return `<td>${cellValue}</td>`;
         }).join('');
 
-        // Clases para el estilo de la fila: inactivo + clase de rol
         const roleClass = `role-${userRole}`;
         const rowClass = `${isInactive ? 'inactive-record' : ''} ${roleClass}`;
 
@@ -545,10 +511,9 @@ export class AdminUserManager {
 
         const filteredConfigForm = configForm.filter(field => field.name !== 'visible');
 
-        // CAMBIO 1: Incluir el rol 'empleado'
         const availableRoles = [
             { value: 'cliente', text: 'Cliente' },
-            { value: 'empleado', text: 'Empleado' }, // Nuevo Rol
+            { value: 'empleado', text: 'Empleado' },
             { value: 'administrador', text: 'Administrador' }
         ];
 
@@ -566,7 +531,6 @@ export class AdminUserManager {
             const stepAttr = fieldConfig.step ? `step="${fieldConfig.step}"` : '';
             const numberClass = fieldConfig.type === 'number' ? ' input-number' : '';
             const placeholderText = fieldConfig.placeholder || `Ingrese ${fieldConfig.label.toLowerCase().replace(/\s\(id\)/g, '')}`;
-            // Base disabled attribute from config
             const disabledAttrBase = fieldConfig.disabled ? 'disabled' : '';
 
             let finalRequiredAttr = requiredAttr;
@@ -580,7 +544,6 @@ export class AdminUserManager {
                 return `<input type="hidden" id="${fieldConfig.name}" name="${fieldConfig.name}" value="${currentValue}">`;
             }
 
-            // Bloque para el Selector de Rol (type: select o name: rol)
             if (fieldConfig.type === 'select' || fieldConfig.name === 'rol') {
 
                 let options = [];
@@ -592,7 +555,6 @@ export class AdminUserManager {
 
                 const selectedValue = formData[fieldConfig.name];
 
-                // RESTRICCIÓN ELIMINADA: El campo de rol ahora está siempre habilitado
                 const finalDisabledAttr = '';
 
                 optionsHTML += options.map(option => {
@@ -609,7 +571,6 @@ export class AdminUserManager {
                     </div>
                 `;
             }
-            // Bloque para el campo de contraseña con toggle de imagen
             else if (fieldConfig.name === 'contrasena') {
                 return `
                     <div class="form-group">
@@ -630,7 +591,6 @@ export class AdminUserManager {
                 `;
 
             }
-            // Renderizado genérico para otros campos
             else {
                 return `
                     <div class="form-group">
@@ -701,7 +661,6 @@ export class AdminUserManager {
 
         if (!service) return;
 
-        // 1. Obtener los valores del formulario
         const primer_nombre = formData.get('primer_nombre')?.trim();
         const segundo_nombre = formData.get('segundo_nombre')?.trim();
         const apellido_paterno = formData.get('apellido_paterno')?.trim();
@@ -711,16 +670,13 @@ export class AdminUserManager {
         const email = formData.get('correo_electronico')?.trim();
         const password = formData.get('contrasena')?.trim();
 
-        // Obtener el rol
         let rol = formData.get('rol');
 
-        // 2. PATRONES DE VALIDACIÓN
         const soloLetras = /^[A-Za-zÁÉÍÓÚáéíóúÑñ\s]+$/;
         const soloNumeros = /^[0-9]+$/;
         const correoUniversal = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
         const passwordSegura = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-        // 3. VALIDACIONES
         if (!primer_nombre || !apellido_paterno || !apellido_materno || !ci || !celular || !email || !rol || (action === 'create' && !password)) {
             alert("Todos los campos obligatorios deben ser llenados.");
             return;
@@ -736,7 +692,6 @@ export class AdminUserManager {
             alert("Los apellidos solo pueden contener letras."); return;
         }
 
-        // CI y Celular
         if (!soloNumeros.test(ci) || ci.length !== 7) {
             alert("El C.I. debe contener exactamente 7 dígitos."); return;
         }
@@ -744,12 +699,10 @@ export class AdminUserManager {
             alert("El celular debe contener exactamente 8 dígitos."); return;
         }
 
-        // Correo
         if (!correoUniversal.test(email)) {
             alert("Debe ingresar un correo válido."); return;
         }
 
-        // Contraseña
         if (action === 'create' && !passwordSegura.test(password)) {
             alert("La contraseña es insegura. Debe tener al menos 8 caracteres, incluir una mayúscula, un número y un carácter especial (@$!%*?&)."); return;
         }
@@ -757,7 +710,6 @@ export class AdminUserManager {
             alert("Si intentas cambiar la contraseña, esta es insegura. Debe cumplir con el requisito de al menos 8 caracteres, mayúscula, número y carácter especial (@$!%*?&)."); return;
         }
 
-        // Se eliminan las comprobaciones de rol y el manejo del campo oculto.
         formData.delete('rol_hidden');
 
         try {

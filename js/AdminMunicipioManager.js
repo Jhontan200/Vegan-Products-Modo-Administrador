@@ -1,12 +1,9 @@
-// AdminMunicipioManager.js
-
 import { REPORT_CONFIG, CRUD_FIELDS_CONFIG } from './config/tableConfigs.js';
 import { MunicipioService } from './services/MunicipioService.js';
 import { DepartamentoService } from './services/DepartamentoService.js';
 
 const SERVICE_MAP = {
     'municipio': MunicipioService,
-    // Se añade el servicio de departamento para la carga de select options
     'departamento': DepartamentoService,
 };
 
@@ -58,7 +55,6 @@ export class AdminMunicipioManager {
         if (term) {
             return data.filter(row => {
                 const nombreMunicipio = String(row.nombre || '').toLowerCase();
-                // Acceso a la propiedad anidada que viene del JOIN
                 const nombreDepartamento = String(row.departamento?.nombre || '').toLowerCase();
 
                 return nombreMunicipio.includes(term) || nombreDepartamento.includes(term);
@@ -164,7 +160,6 @@ export class AdminMunicipioManager {
         this.setupSearchAndFilterListeners();
     }
 
-    // ✅ CORRECCIÓN: Se elimina el campo 'VISIBLE' de la tabla
     renderRow(row, tableName, isCrudTable, indexOffset) {
         const config = REPORT_CONFIG[tableName];
         const rowId = row[config.id_key];
@@ -175,7 +170,6 @@ export class AdminMunicipioManager {
         const deleteTitle = isVisible === false ? 'Registro Eliminado' : 'Eliminar';
         const deleteDisabled = isVisible === false ? 'disabled' : '';
 
-        // Renderizamos solo: N°, Nombre de Municipio y Nombre de Departamento
         let rowCells = `
             <td>${row.nombre ?? ''}</td>
             <td>${row.departamento?.nombre ?? 'N/A'}</td> 
@@ -201,7 +195,6 @@ export class AdminMunicipioManager {
         const recordText = 'registros';
         const currentDataLength = dataSlice.length;
 
-        // 🛑 CORRECCIÓN: Nos aseguramos de filtrar 'VISIBLE' para el encabezado
         const displayHeaders = headers.filter(h => h.toUpperCase() !== 'VISIBLE');
 
         const recordCountSpan = this.displayElement.querySelector('.record-count');
