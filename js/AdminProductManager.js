@@ -233,7 +233,7 @@ export class AdminProductManager {
     }
 
     _renderSearchBox(tableName) {
-        const searchInstructions = 'Busca por Nombre o Descripción';
+        const searchInstructions = 'Busca por Nombre o Categoría';
         return `
             <div id="${SEARCH_FILTER_CONTAINER_ID}" class="filter-controls-container">
                 <div class="search-box full-width">
