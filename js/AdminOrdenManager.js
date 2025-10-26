@@ -340,7 +340,7 @@ export class AdminOrdenManager {
     }
 
     _renderSearchAndFilterBox(tableName) {
-        const searchInstructions = 'Buscar por ID de orden, cliente, total, o estado...';
+        const searchInstructions = 'Buscar por N° de orden, cliente, total, o estado...';
         return `
             <div id="${SEARCH_FILTER_CONTAINER_ID}" class="filter-controls-container">
                 <div class="search-box full-width">
